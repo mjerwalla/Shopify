@@ -1,0 +1,208 @@
+<html>
+        <head>
+            <title>Django Photo feed</title>
+            <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.js"></script>
+            <script src="//js.pusher.com/4.0/pusher.min.js"></script>
+        </head>
+        <body>
+
+            <div class="container">
+                <form  method="post" enctype="multipart/form-data" action="/push_feed" onsubmit="return feed_it()">
+                <input type="hidden" id="csrf" name="csrf" value="{{ csrf_token }}"/>
+                <div class="form-group">
+                        <label for="usr">Image:</label>
+                        <input type="file" id="document" name="document" class="form-control"  required>
+                        <!-- <div id="upload_list"></div> -->
+                    </div>
+                    <div class="form-group">
+                        <label for="pwd">Description:</label>
+                        <input type="text" id="description" name="description"  class="form-control"  required>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-success">Submit</button>
+                    </div>
+                </form>
+                <div class="del_button">
+                        <button id="delete" type="delete" class="btn btn-success" onclick="deleteAll()">Delete All</button>
+                </div>
+                <div class="row" id="feeds">
+                    {% for doc in all_documents  %}
+                    <span id ="{{doc.description}}">
+                        <h2>{{doc.description}}</h2>
+                        <img  src="{{doc.document}}">
+                        <button id="delete1" type="delete" onclick="deletePic(this)">Delete</button>
+                        <button id="share1" type="share" onclick="getShare(this)">Share</button>
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+        </body>
+        <script>
+        var files;
+
+        // Add events
+        $(document).ready(function() {
+            var replaceMe = function(){
+                var obj = $(this);
+                $(obj).css({'position':'absolute','left':'-9999px','display':'none'}).parent().prepend('<input type="file" name="'+obj.attr('name')+'"/>')
+                $('#upload_list').append('<div>'+obj.val()+'<input type="button" value="cancel"/><div>');
+                $("input[type='file']").change(replaceMe);
+                $("input[type='button']").click(function(){
+                    $(this).parent().remove();
+                    $(obj).remove();
+                });
+                files = event.target.files;
+            }
+            $('input[type=file]').on('change', prepareUpload);
+        })
+
+
+        // Grab the files and set them to our variable
+        function prepareUpload(event) {
+            files = event.target.files;
+        }
+
+        function feed_it() {
+            console.log("hello");
+            var data = new FormData();
+            $.each(files, function(key, value) {
+                data.append('document', value);
+            });
+            data.append('description', document.getElementById('description').value);
+
+            data.append('csrfmiddlewaretoken', document.getElementById('csrf').value);
+            $.post({
+                url: '/push_feed',
+                data: data,
+                processData: false, // Don't process the files
+                contentType: false, // Set content type to false as jQuery will tell the server it's a query string request
+                success: function(data) {
+                    if (data == "ok") {
+                        alert('done');
+                        document.getElementById('description').value = '';
+                        location.reload();
+                    }
+                },
+                error: function(error) {
+                    alert('an error occured, please try again later')
+                }
+            });
+            // location.reload();
+            return false;
+        }
+
+        function deletePic(obj) {
+            console.log(obj.parentElement.id);
+            var data = new FormData();
+            // $.each(files, function(key, value) {
+            //     data.append('document', value);
+            // });
+            // data.append('description', document.getElementById('description').value);
+            data.append('id',obj.parentElement.id)
+
+            data.append('csrfmiddlewaretoken', document.getElementById('csrf').value);
+            $.post({
+                url: '/delete_one',
+                data: data,
+                processData: false, // Don't process the files
+                contentType: false, // Set content type to false as jQuery will tell the server it's a query string request
+                success: function() {
+                    alert('done');
+                        // document.getElementById('description').value = '';
+                    },
+                    error: function(error) {
+                        alert('an error occured, please try again later')
+                    }
+            });
+            // location.reload();
+            obj.parentElement.remove();
+        }
+
+        function deleteAll() {
+            console.log("WE ARE HERE");
+          // alert( "Handler for .click() called. haah" );
+            var data = new FormData();
+            data.append('csrfmiddlewaretoken', document.getElementById('csrf').value);
+            $.post({
+                url: '/delete_all',
+                data: data,
+                processData: false, // Don't process the files
+                contentType: false, // Set content type to false as jQuery will tell the server it's a query string request
+                success: function() {
+                    alert('done');
+                    location.reload();
+                        // document.getElementById('description').value = '';
+                },
+                error: function(error) {
+                    alert('an error occured, please try again later')
+                }
+            });
+        }
+
+        function sharePic(obj) {
+            var data = new FormData();
+            // $.each(files, function(key, value) {
+            //     data.append('document', value);
+            // });
+            // data.append('description', document.getElementById('description').value);
+            data.append('id',obj.parentElement.id)
+
+            data.append('csrfmiddlewaretoken', document.getElementById('csrf').value);
+            $.get({
+                url: '/share_pic/{{obj.parentElement.id}}',
+                data: data,
+                processData: false, // Don't process the files
+                contentType: false, // Set content type to false as jQuery will tell the server it's a query string request
+                success: function() {
+                    alert('done');
+                        // document.getElementById('description').value = '';
+                    },
+                    error: function(error) {
+                        alert('an error occured, please try again later')
+                    }
+            });
+            // location.reload();
+            obj.parentElement.remove();
+        }
+
+        function getShare(obj) {
+            console.log("WE ARE IN  SHARE");
+            console.log(obj.parentElement.id);
+          // alert( "Handler for .click() called. haah" );
+            var data = new FormData();
+            data.append('id',obj.parentElement.id)
+            data.append('csrfmiddlewaretoken', document.getElementById('csrf').value);
+            $.get({
+                url: '/get_share/{{obj.parentElement.id}}',
+                data: data,
+                processData: false, // Don't process the files
+                contentType: false, // Set content type to false as jQuery will tell the server it's a query string request
+                success: function(data) {
+                    alert(data);
+                    // location.reload();
+                        // document.getElementById('description').value = '';
+                },
+                error: function(error) {
+                    alert('an error occured, please try again later')
+                }
+            });
+        }
+
+        var pusher = new Pusher('627edbfb8e96c901960e', {
+            encrypted: true,
+            cluster: 'us2',
+            authTransport: 'jsonp',
+            authEndpoint: '/pusher_authentication'
+        });
+        var my_channel = pusher.subscribe('private-a_channel');
+        my_channel.bind("an_event", function(doc) {
+            alert("message");
+            var new_message = `<span>
+                        <h2>` + doc.description + `</h2>
+                        <img  src="` + doc.document + `">
+                    </span>`;
+            $('#feeds').prepend(new_message);
+        });
+    </script>
+    </html>

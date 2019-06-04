@@ -1,0 +1,19 @@
+<html>
+<head>
+	<title>Django Photo feed</title>
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.js"></script>
+	<script src="//js.pusher.com/4.0/pusher.min.js"></script>
+</head>
+<body>
+	<div class="container">
+		<h1 style="text-align: center;">Django Photo feed</h1>
+		<div class="row" id="feeds">
+			<span id ="{{all_documents.description}}">
+				<h2>{{all_documents.description}}</h2>
+				<img style="width: 500px; height: 500px;"  src="/{{all_documents.document}}">
+			</span>
+		</div>
+	</div>
+</body>
+</html>
