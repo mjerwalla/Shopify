@@ -22,7 +22,7 @@ urlpatterns = [
     path('', index),
     path('push_feed', push_feed), 
     path('share_pic/<slug:pic_id>', share_pic),
-    path('get_share/<slug:pic_id>', get_share_url),
+    path('get_share', get_share_url),
     path('delete_all', delete_all),
     path('delete_one', delete_one),
     path('pusher_authentication', pusher_authentication)

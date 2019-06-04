@@ -23,6 +23,8 @@ def pusher_authentication(request):
 def push_feed(request):
 	if request.method == 'POST': 
 		form = DocumentForm(request.POST, request.FILES)
+		if Feed.objects.filter(description= request.POST['description']).count() != 0 :
+			return HttpResponse('Descriptor already in use, please select a new descriptor')
 		if form.is_valid():
 			f = form.save()
 			pusher.trigger(u'a_channel',u'an_event', {u'description': f.description, u'document': f.document.url})
@@ -33,15 +35,12 @@ def push_feed(request):
 		return HttpResponse('error, please try again')
 
 def delete_all(request):
-	print("In delete all")
 	if request.method == "POST":
 		all_documents = Feed.objects.all().delete()
 	return HttpResponse('delete completed')
 
 
 def delete_one(request):
-	print("In delete one")
-	print(request.POST['id'])
 	# print(data)
 	if request.method == "POST":
 		all_documents = Feed.objects.filter(description=request.POST['id']).delete()
@@ -49,14 +48,15 @@ def delete_one(request):
 
 
 def share_pic(request, pic_id):
-	print("HERE")
-	print(pic_id)
 	doc = get_object_or_404(Feed, description=pic_id)
 	return render(request, 'trial.html', {'all_documents': doc})
 
-def get_share_url(request, pic_id): 
+def get_share_url(request): 
 	#Generate shareable links, hardcoding for now 
-	doc = 'localhost:8080/share_pic/'
-	print(pic_id)
+	# print(request.POST)
+	id = request.POST['id']
+	# print(id)
+	doc = "localhost:8080/share_pic/"+str(id)
+	# print(pic_id)
 	return HttpResponse(doc)
 	# return JsonResponse({'res':doc})

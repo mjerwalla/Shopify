@@ -64,7 +64,6 @@
         }
 
         function feed_it() {
-            console.log("hello");
             var data = new FormData();
             $.each(files, function(key, value) {
                 data.append('document', value);
@@ -83,6 +82,8 @@
                         document.getElementById('description').value = '';
                         location.reload();
                     }
+                    else:
+                        alert(data)
                 },
                 error: function(error) {
                     alert('an error occured, please try again later')
@@ -93,12 +94,7 @@
         }
 
         function deletePic(obj) {
-            console.log(obj.parentElement.id);
             var data = new FormData();
-            // $.each(files, function(key, value) {
-            //     data.append('document', value);
-            // });
-            // data.append('description', document.getElementById('description').value);
             data.append('id',obj.parentElement.id)
 
             data.append('csrfmiddlewaretoken', document.getElementById('csrf').value);
@@ -120,8 +116,6 @@
         }
 
         function deleteAll() {
-            console.log("WE ARE HERE");
-          // alert( "Handler for .click() called. haah" );
             var data = new FormData();
             data.append('csrfmiddlewaretoken', document.getElementById('csrf').value);
             $.post({
@@ -167,21 +161,17 @@
         }
 
         function getShare(obj) {
-            console.log("WE ARE IN  SHARE");
-            console.log(obj.parentElement.id);
-          // alert( "Handler for .click() called. haah" );
             var data = new FormData();
             data.append('id',obj.parentElement.id)
             data.append('csrfmiddlewaretoken', document.getElementById('csrf').value);
             $.get({
-                url: '/get_share/{{obj.parentElement.id}}',
+                url: '/get_share',
                 data: data,
                 processData: false, // Don't process the files
                 contentType: false, // Set content type to false as jQuery will tell the server it's a query string request
                 success: function(data) {
                     alert(data);
                     // location.reload();
-                        // document.getElementById('description').value = '';
                 },
                 error: function(error) {
                     alert('an error occured, please try again later')
